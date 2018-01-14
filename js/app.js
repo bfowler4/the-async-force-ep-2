@@ -3,78 +3,59 @@ requestButton.addEventListener(`click`, function (event) {
   clearElement(`contentContainer`);
   let resourceType = document.getElementById(`resourceType`).value;
   let resourceId = document.getElementById(`resourceId`).value;
-  if (resourceType === `people`) {
-    displayPerson(resourceId);
-  } else if (resourceType === `planets`) {
-    displayPlanet(resourceId);
-  } else {
-    displayStarship(resourceId);
-  }
+  updateDisplay(resourceType, resourceId);
 });
 
-function displayPerson(resourceId) {
+function updateDisplay(resourceType, resourceId) {
   let container = createElement(`div`);
-  let personXHR = new XMLHttpRequest();
-  personXHR.addEventListener(`load`, function (event) {
+  let xhr = new XMLHttpRequest();
+  xhr.addEventListener(`load`, function (event) {
     if (checkForError(event)) {
-      let data = fetchData(event, [`name`, `gender`, `species`]);
-      container.appendChild(createElement(`h2`, false, data.name));
-      container.appendChild(createElement(`p`, false, data.gender));
+      if (resourceType === `people`) {
+        data = fetchData(event, [`name`, `gender`, `species`]);
+        container.appendChild(createElement(`h2`, false, data.name));
+        container.appendChild(createElement(`p`, false, data.gender));
 
-      let speciesXHR = new XMLHttpRequest();
-      speciesXHR.addEventListener(`load`, function (event) {
-        let data = fetchData(event, [`name`]);
-        container.appendChild(createElement(`p`, false, data.name));
-      });
-      speciesXHR.open(`GET`, data.species);
-      speciesXHR.send();
-      document.getElementById(`contentContainer`).appendChild(container);
-    }
-  });
-  personXHR.open(`GET`, `https://swapi.co/api/people/${resourceId}/`);
-  personXHR.send();
-}
+        let speciesXHR = new XMLHttpRequest();
+        speciesXHR.addEventListener(`load`, function (event) {
+          let data = fetchData(event, [`name`]);
+          container.appendChild(createElement(`p`, false, data.name));
+        });
+        speciesXHR.open(`GET`, data.species);
+        speciesXHR.send();
+      } else if (resourceType === `planets`) {
+        data = fetchData(event, [`name`, `terrain`, `population`, `films`]);
+        container.appendChild(createElement(`h2`, false, data.name));
+        container.appendChild(createElement(`p`, false, data.terrain));
+        container.appendChild(createElement(`p`, false, data.population));
+      } else {
+        data = fetchData(event, [`name`, `manufacturer`, `starship_class`, `films`]);
+        container.appendChild(createElement(`h2`, false, data.name));
+        container.appendChild(createElement(`p`, false, data.manufacturer));
+        container.appendChild(createElement(`p`, false, data.starship_class));
+      }
 
-function displayPlanet(resourceId) {
-  let container = createElement(`div`);
-  let planetXHR = new XMLHttpRequest();
-  planetXHR.addEventListener(`load`, function (event) {
-    if (checkForError(event)) {
-      let data = fetchData(event, [`name`, `terrain`, `population`, `films`]);
-      container.appendChild(createElement(`h2`, false, data.name));
-      container.appendChild(createElement(`p`, false, data.terrain));
-      container.appendChild(createElement(`p`, false, data.population));
-
-      let films = createElement(`ul`);
-      addFilmsToList(films, data.films);
-      container.appendChild(films);
-
-      document.getElementById(`contentContainer`).appendChild(container);
-    }
-  });
-  planetXHR.open(`GET`, `https://swapi.co/api/planets/${resourceId}/`);
-  planetXHR.send();
-}
-
-function displayStarship(resourceId) {
-  let container = createElement(`div`);
-  let starshipXHR = new XMLHttpRequest();
-  starshipXHR.addEventListener(`load`, function (event) {
-    if (checkForError(event)) {
-      let data = fetchData(event, [`name`, `manufacturer`, `starship_class`, `films`]);
-      container.appendChild(createElement(`h2`, false, data.name));
-      container.appendChild(createElement(`p`, false, data.manufacturer));
-      container.appendChild(createElement(`p`, false, data.starship_class));
-
-      let films = createElement(`ul`);
-      addFilmsToList(films, data.films);
-      container.appendChild(films);
+      if (resourceType === `planets` || resourceType === `starships`) {
+        let films = createElement(`ul`);
+        addFilmsToList(films, data.films);
+        container.appendChild(films);
+      }
 
       document.getElementById(`contentContainer`).appendChild(container);
     }
   });
-  starshipXHR.open(`GET`, `https://swapi.co/api/starships/${resourceId}/`);
-  starshipXHR.send();
+  
+  switch (resourceType) {
+    case `people`:
+      xhr.open(`GET`, `https://swapi.co/api/people/${resourceId}/`);
+      break;
+    case `planets`:
+      xhr.open(`GET`, `https://swapi.co/api/planets/${resourceId}/`);
+      break;
+    case `starships`:
+      xhr.open(`GET`, `https://swapi.co/api/starships/${resourceId}/`);
+  }
+  xhr.send();
 }
 
 function fetchData(event, keys) {
