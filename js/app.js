@@ -44,7 +44,7 @@ function updateDisplay(resourceType, resourceId) {
       document.getElementById(`contentContainer`).appendChild(container);
     }
   });
-  
+
   switch (resourceType) {
     case `people`:
       xhr.open(`GET`, `https://swapi.co/api/people/${resourceId}/`);
